@@ -8,12 +8,13 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
 class Model:
-    def __init__(self, data_batch, num_classes, num_epochs):
+    def __init__(self, num_classes=36, main_model='resnet50_custom_2.pth', num_epochs=10, data_batch=None, pre_trained=True):
         self.num_classes = num_classes
         self.data_batch = data_batch
         self.num_epochs = num_epochs
-        self.main_model = 'resnet50_custom_2.pth'
+        self.main_model = main_model
         self.model = self.get_model().to(device)
+        self.pre_trained = pre_trained
         self.optimizer = optim.Adam(self.model.parameters(), lr=0.001)
         self.criterion = nn.CrossEntropyLoss()
 
@@ -30,8 +31,8 @@ class Model:
 
         for param in resnet.parameters():
             param.requires_grad = False
-
-        resnet.fc = nn.Linear(2048, self.num_classes)
+        if not self.pre_trained:
+            resnet.fc = nn.Linear(2048, self.num_classes)
         return resnet
 
     def train_batch(self, x, y):
@@ -63,4 +64,13 @@ class Model:
                 correct += (predicted == y).sum().item()
                 total += y.size(0)
         return 100 * correct / total
+
+
+    def inferance(self, input_tensor):
+        self.model.eval()
+        with torch.no_grad():
+            preds = self.model(input_tensor)
+            _, predicted = torch.max(preds, 1)
+        return predicted
+
 
