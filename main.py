@@ -6,7 +6,7 @@ data = Data(root='C:/Users/hp/Desktop/grad_project_2/gisture_classifier/sample_d
 
 train_loader, num_classes = data.get_data()
 
-model_instance = Model(train_loader, num_classes, 10)
+model_instance = Model(data_batch=train_loader, num_classes=num_classes, pre_trained=False)
 trained_model = model_instance.fine_tune()
 
 acc = model_instance.evaluate()
